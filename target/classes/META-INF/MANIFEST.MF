@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Built-By: gorsk
+Build-Jdk: 17.0.5
+Main-Class: put.ai.games.naiveplayer.NaivePlayer
+Created-By: Maven Integration for Eclipse
+
