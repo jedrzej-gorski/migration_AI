@@ -100,7 +100,7 @@ public class NaivePlayer extends Player {
             //For every column ahead of the piece...
             for (int i = (x + 1); i < boardSize; i++) {
                 //...check how many moves the opponent would have to make minimum to block the piece at x, y
-                for (int j = (y + 1); j >= 0; j++) {
+                for (int j = (y + 1); j < boardSize; j++) {
                     if (b.getState(i, j) == Color.PLAYER2) {
                         if (blockadeSteps > j - y - 1) {
                             blockadeSteps = j - y - 1;
@@ -114,7 +114,7 @@ public class NaivePlayer extends Player {
             //For every row ahead of the piece...
             for (int j = y - 1; j >= 0; j--) {
                 //...check how many moves the opponent would have to make minimum to block the piece at x, y
-                for (int i = x - 1; i < boardSize; i--) {
+                for (int i = x - 1; i >= 0; i--) {
                     if (b.getState(i, j) == Color.PLAYER1) {
                         if (blockadeSteps > x - 1 - i) {
                             blockadeSteps = x - 1 - i;
