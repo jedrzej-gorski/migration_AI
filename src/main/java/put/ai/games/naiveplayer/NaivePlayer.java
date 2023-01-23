@@ -5,7 +5,6 @@
 package put.ai.games.naiveplayer;
 
 import java.util.List;
-import java.util.Random;
 import put.ai.games.game.Board;
 import put.ai.games.game.Move;
 import put.ai.games.game.Player;
@@ -13,10 +12,6 @@ import put.ai.games.game.Player;
 public class NaivePlayer extends Player {
 
     public static void main(String[] args) {}
-
-    private Random random = new Random(0xdeadbeef);
-
-
 
     @Override
     public String getName() {
@@ -29,7 +24,7 @@ public class NaivePlayer extends Player {
             // If the piece in front of the one being tested belongs to the player, is blocked by an enemy piece? If so, return 0, if not, return 1/3
             if (b.getState(x + 1, y) == player) {
                 // Min is used here to prevent chaining pieces from lowering the value below 1/4
-                return Math.min(1/4, 1/3 * isPieceBlocked(x + 1, y, boardSize, player, b));
+                return Math.min(1.0/4.0, 1.0/3.0 * isPieceBlocked(x + 1, y, boardSize, player, b));
             }
             // If the piece can't move forward, return 0
             else if (x + 1 == boardSize || b.getState(x + 1, y) == Color.PLAYER2){
@@ -44,7 +39,7 @@ public class NaivePlayer extends Player {
             // If the piece in front of the one being tested belongs to the player, is blocked by an enemy piece? If so, return 0, if not, return 1/3
             if (b.getState(x, y - 1) == player) {
                 // Min is used here to prevent chaining pieces from lowering the value below 1/4
-                return Math.min(1/4, 1/3 * isPieceBlocked(x, y - 1, boardSize, player, b));
+                return Math.min(1.0/4.0, 1.0/3.0 * isPieceBlocked(x, y - 1, boardSize, player, b));
             }
             // If the piece can't move forward, return 0
             else if (y - 1 == -1 || b.getState(x, y - 1) == Color.PLAYER2){
@@ -90,7 +85,7 @@ public class NaivePlayer extends Player {
             return 0.0;
         }
         // W / P
-        return blockadeDistance / maximumDistance;
+        return (double)blockadeDistance / (double)maximumDistance;
     }
 
     // Calculate max(1/2, min(L/3, 1)), addressing how easy it is for an opponent to block the piece at x, y. This function should never be called on a blocked piece
@@ -128,12 +123,11 @@ public class NaivePlayer extends Player {
         else {
             return 0.0;
         }
-        return Math.max(1/2, Math.min(blockadeSteps / 3, 1));
+        return Math.max(1.0/2.0, Math.min((float)blockadeSteps / 3.0, 1.0));
     }
 
     // Return the board value for a given board state and turn. The function will return a value multiplied by -1 for the enemy's turn in order to be compatible with the Negamax algorithm.
     protected double evaluateBoard(Board b, Color turn) {
-        System.out.println("Evaluating board");
         Color playerNo = getColor();
         Color opponentNo = Color.EMPTY;
         double playerOneScore = 0.0;
@@ -161,9 +155,9 @@ public class NaivePlayer extends Player {
         int boardDimensions = b.getSize();
         for (int i = 0; i < boardDimensions; i++) {
             for (int j = 0; j < boardDimensions; j++) {
-                System.out.println("Checking position " + i + " " + j);
                 // Calculate a piece's contribution to PLAYER1's score
                 if (b.getState(i, j) == Color.PLAYER1) {
+                    //System.out.println(i+ " " +j+" "+1);
                     double isBlockedCoeff = isPieceBlocked(i, j, boardDimensions, Color.PLAYER1, b);
                     // Float comparison using a fixed epsilon value. If isBlockedCoeff isn't equal to 1.0, return the value of the piece.
                     if (Math.abs(isBlockedCoeff - 1.0) > 0.0001) {
@@ -176,7 +170,7 @@ public class NaivePlayer extends Player {
                         // blockadeEaseCoeff is equivalent to max(1/2, min(1, L/3)) in the formula
                         double blockadeEaseCoeff = calculateEaseOfBlockade(i, j, boardDimensions, Color.PLAYER1, b);
                         // Formula for unblocked pieces
-                        playerOneScore += isBlockedCoeff * 10 * Math.max(1/3, freePathCoeff * blockadeEaseCoeff);
+                        playerOneScore += isBlockedCoeff * 10 * Math.max(1.0/3.0, freePathCoeff * blockadeEaseCoeff);
                     }
                 }
                 // Calculate a piece's contribution to PLAYER2's score
@@ -193,7 +187,7 @@ public class NaivePlayer extends Player {
                         // blockadeEaseCoeff is equivalent to max(1/2, min(1, L/3)) in the formula
                         double blockadeEaseCoeff = calculateEaseOfBlockade(i, j, boardDimensions, Color.PLAYER2, b);
                         // Formula for unblocked pieces
-                        playerTwoScore += isBlockedCoeff * 10 * Math.max(1/3, freePathCoeff * blockadeEaseCoeff);
+                        playerTwoScore += isBlockedCoeff * 10 * Math.max(1.0/3.0, freePathCoeff * blockadeEaseCoeff);
                     }
                 }
             }
@@ -219,10 +213,9 @@ public class NaivePlayer extends Player {
         if (remainingDepth == 0) {
             return evaluateBoard(b,current_turn);
         }
-        double value = -1000000;
+        double value = -1000000.0;
         List<Move> moves = b.getMovesFor(current_turn);
         for (int i = 0;i<moves.size();i++) {
-            System.out.println("Evaluating submove " + i);
             Move tested_move = moves.get(i);
             Board new_board = b.clone();
             new_board.doMove(tested_move);
@@ -232,7 +225,11 @@ public class NaivePlayer extends Player {
             }else{
                 next_turn = Color.PLAYER1;
             }
-            double temp_score = evaluateBoard(new_board,next_turn);
+            double temp_score = negamax(new_board,remainingDepth-1,next_turn);
+            if (temp_score<=-1000) {
+                return -10000;
+            }
+            //System.out.println("Sub-move " + i + " at score " + temp_score);
             if (temp_score>value) {
                 value = temp_score;
             }
@@ -246,17 +243,19 @@ public class NaivePlayer extends Player {
         List<Move> moves = b.getMovesFor(getColor());
         double value = -100000;
         Move best_move = moves.get(0);
-        for (int i = 0;i<1;i++) {
-            System.out.println("Evaluating move " + i);
+        for (int i = 0;i<moves.size();i++) {
             Move tested_move = moves.get(i);
             Board new_board = b.clone();
             new_board.doMove(tested_move);
-            double temp_score = negamax(new_board,0,getOpponent(getColor()));
+            double temp_score = negamax(new_board,7,getColor());
+            //System.out.println("Move " + i + " at score " + temp_score);
             if (temp_score>value) {
                 value = temp_score;
                 best_move = tested_move;
             }
         }
+        //System.out.println("============");
+        //System.out.println("Best " + best_move + " at score " + value);
         return best_move;
     }
 }
