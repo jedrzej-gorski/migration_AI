@@ -212,17 +212,17 @@ public class InterestingPlayer extends Player {
     
     protected double negamax(Board b, int remainingDepth, Color our_color) {
     	if (remainingDepth == 0) {
-    		if (b.getColor()==our_color) {
+    		if (getColor()==our_color) {
     			return evaluateBoard(b);
     		}else{
     			return evaluateBoard(b)*-1;
     		}
     	}
     	double value = -1000000;
-    	List<Move> moves = b.getMovesFor(b.getColor());
+    	List<Move> moves = b.getMovesFor(getColor());
         for (int i = 0;i<moves.size();i++) {
         	tested_move = moves.get(i);
-        	Board new_board = b.clone;
+        	Board new_board = b.clone();
         	tested_board.doMove(tested_move);
         	double temp_score = evaluateBoard(tested_board,new_board.getColor());
         	if (temp_score>value) {
@@ -240,7 +240,7 @@ public class InterestingPlayer extends Player {
     	Move best_move = moves.get(0);
         for (int i = 0;i<moves.size();i++) {
         	tested_move = moves.get(i);
-        	Board new_board = b.clone;
+        	Board new_board = b.clone();
         	tested_board.doMove(tested_move);
         	double temp_score = negamax(tested_board,2,b.getColor());
         	if (temp_score>value) {

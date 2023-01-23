@@ -22,12 +22,12 @@ public class NaivePlayer extends Player {
     protected double isPieceBlocked(int x, int y, int boardSize, Color player, Board b) {
         if (player == Color.PLAYER1) {
             // If the piece in front of the one being tested belongs to the player, is blocked by an enemy piece? If so, return 0, if not, return 1/3
-            if (b.getState(x + 1, y) == player) {
+            if (b.getState(y, x + 1) == player) {
                 // Min is used here to prevent chaining pieces from lowering the value below 1/4
-                return Math.min(1.0/4.0, 1.0/3.0 * isPieceBlocked(x + 1, y, boardSize, player, b));
+                return Math.min(1.0/4.0, 1.0/3.0 * isPieceBlocked(y, x + 1, boardSize, player, b));
             }
             // If the piece can't move forward, return 0
-            else if (x + 1 == boardSize || b.getState(x + 1, y) == Color.PLAYER2){
+            else if (x + 1 == boardSize || b.getState(y, x + 1) == Color.PLAYER2){
                 return 0;
             }
             // If the piece can move forward, return 1
@@ -37,12 +37,12 @@ public class NaivePlayer extends Player {
         }
         else if (player == Color.PLAYER2) {
             // If the piece in front of the one being tested belongs to the player, is blocked by an enemy piece? If so, return 0, if not, return 1/3
-            if (b.getState(x, y - 1) == player) {
+            if (b.getState(y - 1, x) == player) {
                 // Min is used here to prevent chaining pieces from lowering the value below 1/4
                 return Math.min(1.0/4.0, 1.0/3.0 * isPieceBlocked(x, y - 1, boardSize, player, b));
             }
             // If the piece can't move forward, return 0
-            else if (y - 1 == -1 || b.getState(x, y - 1) == Color.PLAYER2){
+            else if (y - 1 == -1 || b.getState(y - 1, x) == Color.PLAYER2){
                 return 0;
             }
             // If the piece can move forward, return 1
@@ -96,7 +96,7 @@ public class NaivePlayer extends Player {
             for (int i = (x + 1); i < boardSize; i++) {
                 //...check how many moves the opponent would have to make minimum to block the piece at x, y
                 for (int j = (y + 1); j < boardSize; j++) {
-                    if (b.getState(i, j) == Color.PLAYER2) {
+                    if (b.getState(j, i) == Color.PLAYER2) {
                         if (blockadeSteps > j - y - 1) {
                             blockadeSteps = j - y - 1;
                             break;
